@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Sudoku Quest</title>
+<script src="https://www.youtube.com/game_api/v1"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--f:"Rajdhani","Segoe UI",system-ui,sans-serif;--fh:"Russo One","Impact","Arial Black",sans-serif;
+--bg:#080c16;--bg2:#141b30;--card:#1d2748;--card2:#2a376a;--ink:#f1f5ff;--mut:#8f9cc6;--ac:#ff9f1c;--ac2:#19c6ff;--gold:#ffd23f;--grn:#38e07b;--bad:#ff4d5e;--pur:#8b5cff;
+--cell:#172038;--cellt:#eaf0ff;--given:#232f55;--givt:#fff;--sel:#4f3510;--peer:#1e2a4a;--same:#35498a;--u:#4fd8ff;--line:#0a0f1d;--nt:#8ea0d8;--eb:#4a1c27;--et:#ff7a88}
+body.light{--bg:#e6ebfa;--bg2:#fff;--card:#fff;--card2:#dfe6ff;--ink:#141d44;--mut:#5a6796;--cell:#fff;--cellt:#14204a;--given:#e1e7ff;--givt:#14204a;--sel:#ffdca3;--peer:#eef2ff;--same:#c8d6ff;--u:#0a62e8;--line:#27346a;--nt:#5a6796;--eb:#ffdadd;--et:#d6263a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;color:var(--ink);font-family:var(--f);font-weight:600;overflow:hidden;
+background:radial-gradient(120% 60% at 50% -10%,rgba(255,159,28,.18),transparent 60%),radial-gradient(90% 50% at 100% 100%,rgba(25,198,255,.14),transparent 60%),repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 14px),var(--bg)}
+.scr{display:none;position:absolute;inset:0;padding:max(14px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));flex-direction:column;align-items:center;overflow-y:auto;animation:fin .3s ease}
+.scr.on{display:flex}.scr>:first-child{margin-top:auto}.scr>:last-child{margin-bottom:auto}
+@keyframes fin{from{opacity:0;transform:translateY(10px)}}
+.kick{font:700 13px var(--f);letter-spacing:5px;color:var(--ac);text-align:center}
+h1{font:clamp(34px,10.5vw,56px)/1 var(--fh);margin:6px 0 0;text-align:center;letter-spacing:1px;text-shadow:0 4px 0 rgba(0,0,0,.4),0 0 28px rgba(255,159,28,.35)}
+h1 span{color:var(--ac);display:block}
+.sub{color:var(--mut);margin:10px 0 14px;text-align:center;font-size:17px;letter-spacing:1px}
+.bar{display:flex;gap:8px;justify-content:center;margin:6px 0 14px;flex-wrap:wrap}
+.chip{background:linear-gradient(#26335f,#192245);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 16px;font:700 18px var(--f);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+body.light .chip{background:#fff}
+.lab{width:min(400px,100%);font:700 13px var(--f);letter-spacing:4px;color:var(--mut);margin:14px 0 4px;display:flex;align-items:center;gap:10px}
+.lab:after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--mut),transparent);opacity:.4}
+.btn{position:relative;overflow:hidden;width:min(400px,100%);border:0;border-bottom:5px solid rgba(0,0,0,.4);padding:14px 22px;margin:7px 0;font:700 20px var(--f);letter-spacing:1px;text-transform:uppercase;color:var(--ink);background:linear-gradient(#2e3c72,#1d2748);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;
+clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);transition:transform .08s,filter .15s}
+.btn:hover{filter:brightness(1.12)}.btn:active{transform:translateY(3px) scale(.985);filter:brightness(.9);border-bottom-width:2px}
+.btn small{font:600 15px var(--f);color:var(--mut);letter-spacing:.5px;text-transform:none}
+body.light .btn{background:linear-gradient(#fff,#dfe6ff);color:var(--ink)}
+.btn.p{background:linear-gradient(#ffc04d,#ff8a00);color:#2a1300;border-bottom-color:#a64d00;font-size:24px;min-height:66px;font-family:var(--fh);font-weight:400}
+.btn.p small{color:#4a2400;font-family:var(--f);font-weight:700}
+.btn.p:after{content:"";position:absolute;top:0;left:-60%;width:30%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:sh 3.2s infinite}
+@keyframes sh{0%,60%{left:-60%}100%{left:130%}}
+.btn.d{background:linear-gradient(#9d78ff,#5b34d8);border-bottom-color:#2e1585;color:#fff}.btn.d small{color:#e6dcff}
+.btn.c{background:linear-gradient(#37dcff,#0a9ccf);border-bottom-color:#04607f;color:#032a38}.btn.c small{color:#06465c}
+.btn.g{background:linear-gradient(#52ee92,#1fae5a);border-bottom-color:#0d6633;color:#052e17}.btn.g small{color:#0a4a26}
+.btn.r{background:linear-gradient(#ff6c7a,#d42e40);border-bottom-color:#7c1420;color:#fff}.btn.r small{color:#ffd9dd}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(400px,100%)}
+.row .btn{margin:6px 0;justify-content:center;text-align:center;flex-direction:column;gap:0;padding:12px 10px}
+.top{display:flex;width:min(94vw,560px);align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px}
+.ib{background:linear-gradient(#ffb03a,#ff8a00);border:0;border-bottom:4px solid #a64d00;color:#2a1300;border-radius:12px;width:46px;height:46px;font:700 28px/1 var(--f);cursor:pointer;display:grid;place-items:center;padding:0 0 3px;transition:transform .08s}
+.ib:active{transform:translateY(3px);border-bottom-width:1px}
+.info{text-align:center;font:400 22px var(--fh);letter-spacing:1px;line-height:1.15}.info small{display:block;color:var(--ac);font:700 15px var(--f);letter-spacing:1px}
+#tm{color:var(--ac2)}
+#board{display:grid;grid-template-columns:repeat(9,1fr);width:min(94vw,52vh,520px);aspect-ratio:1;border:3px solid var(--ac);border-radius:10px;overflow:hidden;background:var(--line);gap:1px;box-shadow:0 0 0 3px var(--line),0 0 28px rgba(255,159,28,.28),0 12px 30px rgba(0,0,0,.5)}
+.c{background:var(--cell);color:var(--cellt);display:flex;align-items:center;justify-content:center;font:700 clamp(20px,6vw,34px) var(--f);position:relative;cursor:pointer;transition:background .12s}
+.c.g{background:var(--given);color:var(--givt);font-weight:700}
+.c.p{background:var(--peer)}.c.s2{background:var(--same)}
+.c.s{background:var(--sel);box-shadow:inset 0 0 0 2.5px var(--ac);z-index:1;animation:sl .18s}
+@keyframes sl{from{transform:scale(1.18)}}
+.c.u{color:var(--u)}.c.e{color:var(--et);background:var(--eb);animation:shk .3s}
+@keyframes shk{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.c:nth-child(3n):not(:nth-child(9n)){border-right:2px solid var(--line)}
+.c:nth-child(n+19):nth-child(-n+27),.c:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--line)}
+.n{display:grid;grid-template-columns:repeat(3,1fr);width:100%;height:100%;font:700 clamp(8px,2.3vw,12px) var(--f);color:var(--nt);text-align:center;line-height:1}
+.n i{font-style:normal;display:flex;align-items:center;justify-content:center}
+.tools{display:flex;gap:8px;margin:14px 0 10px;width:min(94vw,520px)}
+.tl{flex:1;background:linear-gradient(#2e3c72,#1d2748);border:0;border-bottom:4px solid rgba(0,0,0,.4);color:var(--ink);border-radius:12px;padding:8px 2px 6px;font:700 13px var(--f);letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:transform .08s}
+body.light .tl{background:linear-gradient(#fff,#dfe6ff)}
+.tl:active{transform:translateY(3px);border-bottom-width:1px}
+.tl b{display:block;font-size:22px;line-height:1.2;margin-bottom:2px}
+.tl.on{background:linear-gradient(#ffc04d,#ff8a00);color:#2a1300;border-bottom-color:#a64d00}
+.pad{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;width:min(94vw,520px)}
+.pad button{background:linear-gradient(#34457f,#1d2748);border:0;border-bottom:4px solid rgba(0,0,0,.45);color:var(--ink);border-radius:10px;padding:8px 0 3px;font:400 clamp(22px,6.4vw,30px) var(--fh);cursor:pointer;transition:transform .08s}
+body.light .pad button{background:linear-gradient(#fff,#d5defa)}
+.pad button:active{transform:translateY(3px);border-bottom-width:1px;background:var(--ac);color:#2a1300}
+.pad button small{display:block;font:700 12px var(--f);color:var(--ac2)}
+.pad button.dn{opacity:.18;pointer-events:none}
+.lv{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;width:min(420px,100%);padding:4px 2px 24px}
+.lv button{aspect-ratio:1;border:0;border-bottom:4px solid rgba(0,0,0,.4);border-radius:12px;background:linear-gradient(#34457f,#1d2748);color:var(--ink);font:400 22px var(--fh);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .08s}
+body.light .lv button{background:linear-gradient(#fff,#dfe6ff)}
+.lv button:active{transform:translateY(3px);border-bottom-width:1px}
+.lv button small{font:700 11px var(--f);color:var(--gold);letter-spacing:1px}
+.lv button.lk{opacity:.4;filter:grayscale(.6)}
+.lv button.cur{background:linear-gradient(#ffc04d,#ff8a00);color:#2a1300;border-bottom-color:#a64d00;animation:pu 1.4s infinite}
+.lv button.cur small{color:#4a2400}
+@keyframes pu{50%{box-shadow:0 0 18px rgba(255,159,28,.8)}}
+#mod{position:fixed;inset:0;background:rgba(3,5,14,.8);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:9;padding:20px}
+#mod.on{display:flex}
+#mb{background:linear-gradient(#1b2548,#101730);border-top:5px solid var(--ac);padding:24px 22px 18px;width:min(380px,100%);text-align:center;animation:pop .28s cubic-bezier(.2,1.4,.4,1);clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);display:flex;flex-direction:column;align-items:center;color:#f1f5ff}
+body.light #mb{background:linear-gradient(#fff,#e9eeff);color:#141d44}
+#mb h2{margin:0 0 6px;font:400 28px var(--fh);letter-spacing:1px}
+#mb p{color:var(--mut);margin:6px 0 12px;font-size:18px}
+.big{font:400 46px var(--fh);margin:4px 0}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:10px 0;width:100%}
+.days div{background:var(--card);border-radius:8px;padding:6px 0;font:700 13px var(--f);color:var(--ink)}
+.days .dn{background:var(--grn);color:#052e17}.days .nx{outline:2px solid var(--gold)}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+#cv{position:fixed;inset:0;pointer-events:none;z-index:10}
+</style>
+</head>
+<body>
+<div id="home" class="scr on">
+  <div class="kick">TACTICAL PUZZLE</div>
+  <h1>SUDOKU <span>QUEST</span></h1>
+  <div class="sub">Solve. Earn. Endless levels.</div>
+  <div class="bar"><div class="chip" id="hc"></div><div class="chip" id="hs"></div><div class="chip" id="hk"></div></div>
+  <button class="btn p" id="bLvl" onclick="playLevel(S.lvl)"></button>
+  <button class="btn g" id="bCont" onclick="resume()">Continue game <small id="cInfo"></small></button>
+  <button class="btn d" id="bDaily" onclick="playDaily()"></button>
+  <button class="btn" onclick="gift()">🎁 Daily gift <small id="gInfo"></small></button>
+  <button class="btn" onclick="drawLevels();show('lvls')">All levels <small id="aInfo"></small></button>
+  <div class="lab">QUICK MATCH</div>
+  <div class="row">
+    <button class="btn g" onclick="quick(1,'Easy')">Easy<small>Singles</small></button><button class="btn c" onclick="quick(2,'Medium')">Medium<small>Pairs &amp; locked</small></button>
+    <button class="btn" style="background:linear-gradient(#ffb03a,#e06a00);color:#2a1300;border-bottom-color:#8a3d00" onclick="quick(3,'Hard')">Hard<small style="color:#4a2400">X-Wing &amp; wings</small></button><button class="btn r" onclick="quick(4,'Expert')">Expert<small>Fish &amp; chains</small></button>
+  </div>
+  <div class="lab">SETTINGS</div>
+  <div class="row">
+    <button class="btn" onclick="tgSnd()" id="bSnd"></button><button class="btn" onclick="tgTheme()" id="bTh"></button>
+  </div>
+</div>
+
+<div id="lvls" class="scr">
+  <div class="top"><button class="ib" onclick="nav()">‹</button><div class="info">LEVELS</div><div style="width:46px"></div></div>
+  <div class="lv" id="lvg"></div>
+</div>
+
+<div id="game" class="scr">
+  <div class="top">
+    <button class="ib" onclick="nav()">‹</button>
+    <div class="info"><span id="gt"></span><small id="gm"></small></div>
+    <div class="info"><span id="tm">0:00</span><small id="ms"></small></div>
+  </div>
+  <div id="board"></div>
+  <div class="tools">
+    <button class="tl" onclick="undo()"><b>↶</b>Undo</button>
+    <button class="tl" onclick="erase()"><b>⌫</b>Erase</button>
+    <button class="tl" id="tN" onclick="tgNote()"><b>✎</b><span id="nl">Notes off</span></button>
+    <button class="tl" onclick="hint()"><b>💡</b>Hint 15🪙</button>
+  </div>
+  <div class="pad" id="pad"></div>
+</div>
+
+<div id="mod" onclick="if(event.target===this&&!mlock)closeM()"><div id="mb"></div></div>
+<canvas id="cv"></canvas>
+
+<script>
+const $=id=>document.getElementById(id);
+const yt=window.ytgame;
+let S={coins:100,stars:{},lvl:1,streak:0,last:'',daily:{},gift:'',gd:0,snd:1,dark:1,g:null};
+let sel=-1,note=false,tick=null,paused=false;
+
+/* ---------- storage (YouTube saveData with localStorage fallback) ---------- */
+function save(){const d=JSON.stringify(S);try{yt&&yt.game.saveData(d)}catch(e){}try{localStorage.setItem('sq',d)}catch(e){}}
+async function load(){let d=null;try{if(yt)d=await yt.game.loadData()}catch(e){}if(!d)try{d=localStorage.getItem('sq')}catch(e){}
+  if(d)try{Object.assign(S,JSON.parse(d))}catch(e){}}
+
+/* ---------- audio ---------- */
+let AC;function beep(f,d=.1,t='sine'){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.value=f;g.gain.value=.08;g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+const vib=n=>{try{navigator.vibrate&&navigator.vibrate(n)}catch(e){}};
+function tgSnd(){S.snd^=1;save();home()}
+function tgTheme(){S.dark^=1;save();home()}
+
+/* ---------- generator ---------- */
+const RNG=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+function cand(g,i){const r=i/9|0,c=i%9,br=r-r%3,bc=c-c%3;let m=0;for(let k=0;k<9;k++){m|=1<<g[r*9+k];m|=1<<g[k*9+c];m|=1<<g[(br+(k/3|0))*9+bc+k%3]}return~m&0x3FE}
+const pc=m=>{let n=0;while(m){n+=m&1;m>>=1}return n};
+function best(g){let b=-1,bn=10,bm=0;for(let i=0;i<81;i++)if(!g[i]){const m=cand(g,i),n=pc(m);if(n<bn){bn=n;b=i;bm=m;if(n<2)break}}return[b,bm]}
+function count(g,lim){const[b,m]=best(g);if(b<0)return 1;let n=0;for(let d=1;d<10&&n<lim;d++)if(m>>d&1){g[b]=d;n+=count(g,lim-n);g[b]=0}return n}
+function fill(g,rnd){const[b,m]=best(g);if(b<0)return true;const ds=[];for(let d=1;d<10;d++)if(m>>d&1)ds.push(d);
+  for(let i=ds.length-1;i>0;i--){const j=rnd()*(i+1)|0;[ds[i],ds[j]]=[ds[j],ds[i]]}
+  for(const d of ds){g[b]=d;if(fill(g,rnd))return true}g[b]=0;return false}
+/* ---------- logic solver: grades puzzles by the hardest human technique needed ---------- */
+const ROWS=[],COLS=[],BOXES=[];
+for(let a=0;a<9;a++){const r=[],c=[],b=[];for(let k=0;k<9;k++){r.push(a*9+k);c.push(k*9+a);b.push(((a/3|0)*3+(k/3|0))*9+(a%3)*3+k%3)}ROWS.push(r);COLS.push(c);BOXES.push(b)}
+const UN=ROWS.concat(COLS,BOXES),BOXOF=[],PEERS=[],SEE=new Uint8Array(81*81),PC=new Uint8Array(1024);
+for(let m=1;m<1024;m++)PC[m]=PC[m>>1]+(m&1);
+for(let i=0;i<81;i++){BOXOF[i]=((i/9|0)/3|0)*3+(i%9/3|0);const s=new Set();[ROWS[i/9|0],COLS[i%9],BOXES[BOXOF[i]]].forEach(u=>u.forEach(j=>{if(j!==i)s.add(j)}));PEERS[i]=[...s];s.forEach(j=>SEE[i*81+j]=1)}
+/* technique list in the order a human tries them: [name, tier]  (tier 1 Easy .. 4 Expert) */
+const TECH=[['Singles',1],['Locked candidates',2],['Naked pair',2],['Hidden pair',2],['Naked triple',3],['Hidden triple',3],['X-Wing',3],['XY-Wing',3],['Swordfish',4],['XYZ-Wing',4],['Forcing chain',4]];
+function logicSolve(puz,maxT){
+  const g=puz.slice(),cd=new Int16Array(81);let left=0,rank=-1;
+  for(let i=0;i<81;i++){if(g[i])cd[i]=0;else{cd[i]=0x3FE;left++}}
+  const put=(i,d)=>{g[i]=d;cd[i]=0;left--;const b=~(1<<d);for(const p of PEERS[i])cd[p]&=b};
+  for(let i=0;i<81;i++)if(g[i]){const d=g[i],b=~(1<<d);for(const p of PEERS[i])cd[p]&=b}
+  const el=(i,m)=>{if(cd[i]&m){cd[i]&=~m;return true}return false};
+  const single=()=>{let p=false;
+    for(let i=0;i<81;i++){const c=cd[i];if(c&&!(c&(c-1))){put(i,31-Math.clz32(c));p=true}}
+    if(p)return true;
+    for(const u of UN)for(let d=1;d<10;d++){let n=0,at=-1;for(const i of u)if(cd[i]>>d&1){n++;at=i}if(n===1){put(at,d);p=true}}
+    return p};
+  const locked=()=>{let p=false;
+    for(let b=0;b<9;b++)for(let d=1;d<10;d++){let rm=0,cm=0;for(const i of BOXES[b])if(cd[i]>>d&1){rm|=1<<(i/9|0);cm|=1<<(i%9)}
+      if(rm&&!(rm&(rm-1))){const r=31-Math.clz32(rm);for(const i of ROWS[r])if(BOXOF[i]!==b&&el(i,1<<d))p=true}
+      if(cm&&!(cm&(cm-1))){const c=31-Math.clz32(cm);for(const i of COLS[c])if(BOXOF[i]!==b&&el(i,1<<d))p=true}}
+    for(let l=0;l<18;l++)for(let d=1;d<10;d++){let bm=0;for(const i of UN[l])if(cd[i]>>d&1)bm|=1<<BOXOF[i];
+      if(bm&&!(bm&(bm-1))){const b=31-Math.clz32(bm);for(const i of BOXES[b]){const inl=l<9?(i/9|0)===l:i%9===l-9;if(!inl&&el(i,1<<d))p=true}}}
+    return p};
+  const nsub=n=>{
+    for(const u of UN){const cs=u.filter(i=>cd[i]&&PC[cd[i]]<=n);if(cs.length<n)continue;
+      const rec=(s,k,m,ch)=>{
+        if(k===n){if(PC[m]!==n)return false;let p=false;for(const i of u)if(!ch.includes(i)&&el(i,m))p=true;return p}
+        for(let x=s;x<cs.length;x++){const nm=m|cd[cs[x]];if(PC[nm]>n)continue;ch.push(cs[x]);const r=rec(x+1,k+1,nm,ch);ch.pop();if(r)return true}return false};
+      if(rec(0,0,0,[]))return true}
+    return false};
+  const hsub=n=>{
+    for(const u of UN){const pos=[],ds=[];
+      for(let d=1;d<10;d++){let m=0;for(let k=0;k<9;k++)if(cd[u[k]]>>d&1)m|=1<<k;pos[d]=m;if(m&&PC[m]<=n)ds.push(d)}
+      if(ds.length<n)continue;
+      const rec=(s,k,pm,dm)=>{
+        if(k===n){if(PC[pm]!==n)return false;let p=false;for(let q=0;q<9;q++)if(pm>>q&1&&el(u[q],~dm&0x3FE))p=true;return p}
+        for(let x=s;x<ds.length;x++){const np=pm|pos[ds[x]];if(PC[np]>n)continue;if(rec(x+1,k+1,np,dm|1<<ds[x]))return true}return false};
+      if(rec(0,0,0,0))return true}
+    return false};
+  const fish=n=>{
+    for(let d=1;d<10;d++)for(let o=0;o<2;o++){
+      const cell=(l,k)=>o?k*9+l:l*9+k,ls=[],pos=[];
+      for(let l=0;l<9;l++){let m=0;for(let k=0;k<9;k++)if(cd[cell(l,k)]>>d&1)m|=1<<k;pos[l]=m;if(m&&PC[m]>=2&&PC[m]<=n)ls.push(l)}
+      if(ls.length<n)continue;
+      const rec=(s,k,pm,ch)=>{
+        if(k===n){if(PC[pm]!==n)return false;let p=false;for(let q=0;q<9;q++)if(pm>>q&1)for(let l=0;l<9;l++)if(!ch.includes(l)&&el(cell(l,q),1<<d))p=true;return p}
+        for(let x=s;x<ls.length;x++){const np=pm|pos[ls[x]];if(PC[np]>n)continue;ch.push(ls[x]);const r=rec(x+1,k+1,np,ch);ch.pop();if(r)return true}return false};
+      if(rec(0,0,0,[]))return true}
+    return false};
+  const xy=()=>{
+    for(let i=0;i<81;i++){if(PC[cd[i]]!==2)continue;
+      for(const j of PEERS[i]){if(PC[cd[j]]!==2||PC[cd[j]&cd[i]]!==1)continue;const c=cd[j]&~cd[i],need=(cd[i]&~cd[j])|c;
+        for(const k of PEERS[i]){if(k===j||cd[k]!==need)continue;let p=false;
+          for(let t=0;t<81;t++)if(t!==j&&t!==k&&SEE[t*81+j]&&SEE[t*81+k]&&el(t,c))p=true;if(p)return true}}}
+    return false};
+  const xyz=()=>{
+    for(let i=0;i<81;i++){if(PC[cd[i]]!==3)continue;const ps=PEERS[i].filter(j=>PC[cd[j]]===2&&(cd[j]&~cd[i])===0);
+      for(let a=0;a<ps.length;a++)for(let b=a+1;b<ps.length;b++){const j=ps[a],k=ps[b];
+        if((cd[j]|cd[k])!==cd[i]||PC[cd[j]&cd[k]]!==1)continue;const z=cd[j]&cd[k];let p=false;
+        for(let t=0;t<81;t++)if(t!==i&&t!==j&&t!==k&&SEE[t*81+i]&&SEE[t*81+j]&&SEE[t*81+k]&&el(t,z))p=true;if(p)return true}}
+    return false};
+  const contra=()=>{for(let i=0;i<81;i++)if(!g[i]&&!cd[i])return true;
+    for(const u of UN)for(let d=1;d<10;d++){let has=false,pl=false;for(const i of u){if(g[i]===d)pl=true;else if(cd[i]>>d&1)has=true}if(!pl&&!has)return true}return false};
+  const force=()=>{ /* assume a value in a 2-candidate cell; if plain singles then break the grid, that value is impossible */
+    if(maxT<4)return false;
+    for(let i=0;i<81;i++){if(PC[cd[i]]!==2)continue;
+      for(let d=1;d<10;d++){if(!(cd[i]>>d&1))continue;const t=g.slice();t[i]=d;
+        const r=logicSolve(t,-1);if(r.bad){cd[i]&=~(1<<d);return true}}}
+    return false};
+  const steps=[[()=>single(),0,1],[locked,1,2],[()=>nsub(2),2,2],[()=>hsub(2),3,2],[()=>nsub(3),4,3],[()=>hsub(3),5,3],[()=>fish(2),6,3],[xy,7,3],[()=>fish(3),8,4],[xyz,9,4],[force,10,4]];
+  main:while(left>0){
+    for(const[f,r,t]of steps){if(t>Math.max(maxT,1))break;if(f()){if(r>rank)rank=r;for(let i=0;i<81;i++)if(!g[i]&&!cd[i])return{solved:false,bad:true,rank,tier:0};continue main}}
+    break}
+  if(left>0&&contra())return{solved:false,bad:true,rank,tier:0};
+  return{solved:left===0,rank,tier:rank<0?1:TECH[rank][1],tech:rank<0?'Singles':TECH[rank][0]}}
+/* next obvious cell (naked/hidden single) for the smart hint, from the player's correct cells */
+function nextSingle(g){
+  const cd=Array(81).fill(0);for(let i=0;i<81;i++)if(!g[i])cd[i]=cand(g,i);
+  for(let i=0;i<81;i++)if(cd[i]&&pc(cd[i])===1)return i;
+  for(const u of UN)for(let d=1;d<10;d++){let n=0,at=-1;for(const i of u)if(cd[i]>>d&1){n++;at=i}if(n===1)return at}
+  return -1}
+
+/* ---------- generator: builds a puzzle, grades it, and keeps it only if it matches the target difficulty ---------- */
+const TN=['','Easy','Medium','Hard','Expert'],FLOOR=[0,40,34,29,24];
+function gen(seed,tier){
+  let best=null;
+  for(let at=0;at<45;at++){
+    const rnd=RNG(seed+at*1000003),sol=Array(81).fill(0);fill(sol,rnd);
+    const p=sol.slice(),o=[...Array(81).keys()];
+    for(let i=80;i>0;i--){const j=rnd()*(i+1)|0;[o[i],o[j]]=[o[j],o[i]]}
+    /* a removal is kept only if the puzzle stays uniquely solvable using techniques up to the target tier */
+    const rate=g=>{const r=logicSolve(g,tier);return r.solved?r:null};
+    let left=81,res={tier:1,tech:'Singles'};
+    for(const i of o){if(left<=FLOOR[tier])break;const v=p[i];p[i]=0;const r=rate(p);if(r){left--;res=r}else p[i]=v}
+    if(res.tier<tier)for(const i of o){if(!p[i]||left<=FLOOR[tier]-8||res.tier>=tier)continue;const v=p[i];p[i]=0;const r=rate(p);if(r){left--;res=r}else p[i]=v}
+    if(count(p.slice(),2)!==1)continue; /* explicit uniqueness guard */
+    const out={sol,puz:p,clues:left,tier:res.tier,tech:res.tech};
+    if(res.tier===tier)return out;
+    if(!best||res.tier>best.tier)best=out}
+  if(!best){const sol=Array(81).fill(0);fill(sol,RNG(seed));best={sol,puz:sol.slice(),clues:81,tier:1,tech:'Singles'}}
+  return best}
+
+/* ---------- helpers ---------- */
+const dkey=(d=new Date())=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+const today=()=>dkey(),yest=()=>dkey(new Date(Date.now()-864e5));
+const fmt=s=>(s/60|0)+':'+String(s%60).padStart(2,'0');
+/* level -> difficulty tier (1 Easy, 2 Medium, 3 Hard, 4 Expert). Endless: after level 40 it stays Expert, with an easier breather every 5th level */
+const tierFor=l=>{let t=l<=10?1:l<=25?2:l<=40?3:4;if(l>10&&l%5==0)t--;return t};
+const nameFor=l=>TN[tierFor(l)];
+const legacyTier=g=>g.tier||(g.clues>38?1:g.clues>32?2:g.clues>27?3:4);
+const dailyTier=()=>[4,2,2,3,3,3,4][new Date().getDay()];
+let mlock=0;
+function show(id){document.querySelectorAll('.scr').forEach(e=>e.classList.toggle('on',e.id===id))}
+function modal(h){mlock=/Solved!/.test(h)?2:/3 mistakes|Building/.test(h)?1:0;$('mb').innerHTML=h;$('mod').classList.add('on')}
+function closeM(){mlock=0;$('mod').classList.remove('on')}
+function stars(n){return'★'.repeat(n)+'☆'.repeat(3-n)}
+const totalStars=()=>Object.values(S.stars).reduce((a,b)=>a+b,0);
+
+/* ---------- home ---------- */
+const GIFTS=[20,30,40,50,75,100,200];
+function home(){
+  closeM();show('home');
+  document.body.classList.toggle('light',!S.dark);
+  $('aInfo').textContent='Level '+S.lvl+' · endless';$('hc').textContent='🪙 '+S.coins;$('hs').textContent='⭐ '+totalStars();$('hk').textContent='🔥 '+S.streak+' day'+(S.streak==1?'':'s');
+  $('bLvl').innerHTML='Play level '+S.lvl+' <small>'+nameFor(S.lvl)+'</small>';
+  const dd=S.daily[today()];
+  $('bDaily').innerHTML='Daily challenge <small>'+(dd?'Done ✓':TN[dailyTier()]+' · bonus coins')+'</small>';
+  $('bCont').style.display=S.g?'flex':'none';
+  if(S.g)$('cInfo').textContent=S.g.title+' · '+fmt(S.g.time);
+  $('gInfo').textContent=S.gift===today()?'Claimed ✓':'Ready 🎁';
+  $('bSnd').textContent=(S.snd?'🔊 Sound: On':'🔇 Sound: Off');$('bTh').textContent=(S.dark?'🌙 Theme: Dark':'☀️ Theme: Light');
+  if(yt)try{yt.engagement.sendScore({value:totalStars()})}catch(e){}
+}
+let lvMax=0;
+function drawLevels(more){
+  if(more)lvMax+=50;else lvMax=Math.max(lvMax,Math.ceil((S.lvl+5)/5)*5);
+  if(lvMax<S.lvl+5)lvMax=Math.ceil((S.lvl+5)/5)*5;
+  let h='';for(let i=1;i<=lvMax;i++){const st=S.stars['L'+i]||0;
+    h+='<button class="'+(i>S.lvl?'lk':'')+(i==S.lvl?' cur':'')+'" onclick="playLevel('+i+')">'+(i>S.lvl?'🔒':i)+(st?'<small>'+stars(st)+'</small>':'')+'</button>'}
+  $('lvg').innerHTML=h;
+  const mb=document.createElement('button');mb.textContent='+ MORE';mb.style.cssText='grid-column:1/-1;aspect-ratio:auto;padding:14px;font-size:18px';mb.onclick=()=>drawLevels(true);$('lvg').appendChild(mb);
+  if(!more){const c=$('lvg').querySelector('.cur');if(c)setTimeout(()=>c.scrollIntoView({block:'center'}),30)}
+}
+function gift(){
+  const t=today();
+  if(S.gift===t){modal('<h2>Come back tomorrow</h2><p>Your next gift is waiting.</p><button class="btn p" onclick="closeM()" style="justify-content:center">OK</button>');return}
+  const d=S.gd%7,r=GIFTS[d];S.coins+=r;S.gift=t;S.gd++;save();beep(660,.2);
+  let days='';GIFTS.forEach((g,i)=>days+='<div class="'+(i<=d?'dn':i==d+1?'nx':'')+'">Day '+(i+1)+'<br>'+g+'</div>');
+  modal('<div class="big">🎁</div><h2>+'+r+' coins</h2><p>Log in every day for bigger rewards.</p><div class="days">'+days+'</div><button class="btn p" onclick="home()" style="justify-content:center">Collect</button>');
+}
+
+/* ---------- game start ---------- */
+function newGame(mode,id,title,tier,seed){
+  show('game');$('board').innerHTML='';modal('<div class="big">🧩</div><h2>Building puzzle…</h2>');
+  setTimeout(()=>{const{sol,puz,clues,tech}=gen(seed,tier);
+    S.g={mode,id,title,tier,tech,clues,seed,sol,puz,cur:puz.slice(),notes:Array(81).fill(0),mis:0,time:0,hist:[],hints:0,done:false};save();closeM();startUI()},40);
+}
+function playLevel(n){if(n>S.lvl){beep(150,.15,'square');vib(40);return}newGame('L',n,'Level '+n,tierFor(n),n*7919+13)}
+function playDaily(){
+  const t=today();if(S.daily[t]){modal('<h2>Already solved</h2><p>New daily puzzle tomorrow. Keep your streak!</p><button class="btn p" onclick="closeM()" style="justify-content:center">OK</button>');return}
+  const[y,m,d]=t.split('-').map(Number);newGame('D',t,'Daily '+m+'/'+d,dailyTier(),y*10000+m*100+d)}
+function quick(t,name){newGame('Q',name,name,t,Date.now()%1e9)}
+function resume(){if(S.g){show('game');startUI()}}
+function leave(){save();clearInterval(tick);home()}
+
+function startUI(){
+  show('game');sel=-1;note=false;
+  const b=$('board');b.innerHTML='';for(let i=0;i<81;i++){const d=document.createElement('div');d.className='c';d.onclick=()=>{sel=sel===i?-1:i;paint();beep(500,.03)};b.appendChild(d)}
+  let p='';for(let n=1;n<10;n++)p+='<button onclick="put('+n+')" id="p'+n+'">'+n+'<small id="r'+n+'"></small></button>';$('pad').innerHTML=p;
+  $('gt').textContent=S.g.title;$('gm').textContent=TN[legacyTier(S.g)];
+  clearInterval(tick);tick=setInterval(()=>{if(!paused&&S.g&&!S.g.done&&$('game').classList.contains('on')){S.g.time++;$('tm').textContent=fmt(S.g.time);if(S.g.time%10==0)save()}},1000);
+  paint();
+  if(S.g.done&&S.g.mis>=3)setTimeout(lose,200);
+}
+function paint(){
+  const g=S.g,cs=$('board').children,sv=sel>=0?g.cur[sel]:0,cnt=Array(10).fill(0);
+  for(let i=0;i<81;i++){
+    const v=g.cur[i],e=cs[i];let c='c';
+    if(g.puz[i])c+=' g';else if(v)c+=v!==g.sol[i]?' e':' u';
+    if(sel>=0){const r=i/9|0,cc=i%9,sr=sel/9|0,sc=sel%9;
+      if(i===sel)c+=' s';else if(sv&&v===sv)c+=' s2';else if(r===sr||cc===sc||((r/3|0)===(sr/3|0)&&(cc/3|0)===(sc/3|0)))c+=' p'}
+    e.className=c;
+    if(v){e.textContent=v;if(v===g.sol[i])cnt[v]++}
+    else if(g.notes[i]){let h='<div class="n">';for(let k=1;k<10;k++)h+='<i>'+(g.notes[i]>>k&1?k:'')+'</i>';e.innerHTML=h+'</div>'}
+    else e.textContent='';
+  }
+  for(let n=1;n<10;n++){$('r'+n).textContent=9-cnt[n];$('p'+n).classList.toggle('dn',cnt[n]>=9)}
+  $('ms').textContent='Mistakes '+g.mis+'/3';$('nl').textContent=note?'Notes on':'Notes off';$('tN').classList.toggle('on',note);
+}
+
+/* ---------- actions ---------- */
+function put(n){
+  const g=S.g;if(sel<0||g.done||g.puz[sel])return;if(g.cur[sel]===g.sol[sel])return;
+  let done9=0;for(let i=0;i<81;i++)if(g.cur[i]===n&&g.sol[i]===n)done9++;
+  if(done9>=9){beep(150,.1,'square');return}
+  if(note){pushH(g,[sel,g.cur[sel],g.notes[sel]]);g.cur[sel]=0;g.notes[sel]^=1<<n;beep(420,.03);paint();save();return}
+  pushH(g,[sel,g.cur[sel],g.notes[sel]]);g.cur[sel]=n;g.notes[sel]=0;
+  if(n!==g.sol[sel]){g.mis++;beep(160,.25,'sawtooth');vib(120);paint();
+    if(g.mis>=3){g.done=true;save();setTimeout(lose,500)}else save();return}
+  beep(700,.08);
+  const r=sel/9|0,c=sel%9;
+  for(let i=0;i<81;i++){if((i/9|0)===r||i%9===c||((i/9|0)/3|0)===(r/3|0)&&(i%9/3|0)===(c/3|0))g.notes[i]&=~(1<<n)}
+  paint();
+  if(lineDone(r,c))beep(900,.15);
+  save();
+  if(g.cur.every((v,i)=>v===g.sol[i]))setTimeout(win,350);
+}
+const HMAX=80;
+function pushH(g,e){g.hist.push(e);if(g.hist.length>HMAX)g.hist.splice(0,g.hist.length-HMAX)}
+function lineDone(r,c){const g=S.g;let a=true,b=true;for(let k=0;k<9;k++){if(g.cur[r*9+k]!==g.sol[r*9+k])a=false;if(g.cur[k*9+c]!==g.sol[k*9+c])b=false}return a||b}
+function erase(){const g=S.g;if(sel<0||g.puz[sel]||g.done||g.cur[sel]===g.sol[sel])return;pushH(g,[sel,g.cur[sel],g.notes[sel]]);g.cur[sel]=0;g.notes[sel]=0;paint();save()}
+function undo(){const g=S.g;if(g.done)return;const hc=g.hc||[];
+  while(g.hist.length){const[i,v,n]=g.hist.pop();if(hc.includes(i)||g.puz[i])continue; /* hinted cells stay solved */
+    g.cur[i]=v;g.notes[i]=n;sel=i;paint();save();beep(380,.05);return}}
+function tgNote(){note=!note;paint()}
+function hint(){
+  const g=S.g;if(g.done)return;
+  if(S.coins<15){modal('<h2>Not enough coins</h2><p>Hints cost 15 coins. Win puzzles and claim your daily gift to earn more.</p><button class="btn p" onclick="closeM()" style="justify-content:center">OK</button>');return}
+  let i=sel;if(i<0||g.puz[i]||g.cur[i]===g.sol[i]){const ns=nextSingle(g.cur.map((v,k)=>v===g.sol[k]?v:0));if(ns>=0)i=ns;else{const l=[];for(let k=0;k<81;k++)if(g.cur[k]!==g.sol[k])l.push(k);if(!l.length)return;i=l[Math.random()*l.length|0]}}
+  S.coins-=15;g.hints++;(g.hc=g.hc||[]).push(i);g.cur[i]=g.sol[i];g.notes[i]=0;sel=i;beep(800,.2);paint();save();
+  if(g.cur.every((v,k)=>v===g.sol[k]))setTimeout(win,350);
+}
+
+/* ---------- win / lose ---------- */
+function win(){
+  const g=S.g;g.done=true;clearInterval(tick);
+  const st=g.mis==0&&g.hints<2?3:g.mis<=1?2:1;
+  let coins=15+Math.max(0,42-g.clues)*2+(st==3?15:0)+(g.time<300?10:0),extra='';
+  if(g.mode=='L'){const k='L'+g.id;if(S.stars[k])coins=5;if((S.stars[k]||0)<st)S.stars[k]=st;if(g.id==S.lvl)S.lvl++; coins+=Math.min(50,Math.floor(g.id/10)*2)}
+  if(g.mode=='D'){S.streak=S.last===yest()?S.streak+1:1;S.last=today();S.daily[today()]=1;const b=50+S.streak*10;coins+=b;extra='<p>🔥 '+S.streak+'-day streak · bonus +'+b+'</p>'}
+  S.coins+=coins;S.g=null;save();confetti();[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.2),i*120));
+  if(yt)try{yt.engagement.sendScore({value:totalStars()})}catch(e){}
+  const nx=g.mode=='L'?'<button class="btn p" onclick="playLevel('+(g.id+1)+')" style="justify-content:center">Next level</button>':'';
+  modal('<div class="big" style="color:var(--gold)">'+stars(st)+'</div><h2>Solved!</h2><p>Time '+fmt(g.time)+' · Mistakes '+g.mis+(g.tech?'<br>'+TN[legacyTier(g)]+' · hardest step: '+g.tech:'')+'</p><h2 style="color:var(--gold)">+'+coins+' 🪙</h2>'+extra+nx+'<button class="btn" onclick="home()" style="justify-content:center">Menu</button>');
+}
+function lose(){
+  const g=S.g;
+  modal('<div class="big">💔</div><h2>3 mistakes</h2><p>Keep going with one more life, or try again.</p>'+
+   (S.coins>=50?'<button class="btn d" onclick="revive()" style="justify-content:center">Extra life · 50 🪙</button>':'')+
+   '<button class="btn p" onclick="retry()" style="justify-content:center">Try again</button><button class="btn" onclick="loseMenu()" style="justify-content:center">Menu</button>');
+}
+function loseMenu(){clearInterval(tick);tick=null;S.g=null;save();home()}
+function revive(){
+  const g=S.g;S.coins-=50;g.mis=2;g.done=false;
+  /* clear the wrong entry that ended the run (and give back that cell's notes) */
+  const h=g.hist[g.hist.length-1];
+  if(h&&!g.puz[h[0]]&&g.cur[h[0]]&&g.cur[h[0]]!==g.sol[h[0]]){g.hist.pop();g.cur[h[0]]=0;g.notes[h[0]]=h[2];sel=h[0]}
+  else for(let i=0;i<81;i++)if(!g.puz[i]&&g.cur[i]&&g.cur[i]!==g.sol[i]){g.cur[i]=0;sel=i;break}
+  save();closeM();paint()}
+function retry(){const g=S.g;closeM();newGame(g.mode,g.id,g.title,legacyTier(g),g.seed)}
+
+/* ---------- confetti ---------- */
+function confetti(){
+  const c=$('cv'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  const cols=['#ff9f1c','#19c6ff','#ffd23f','#38e07b','#8b5cff','#ff4d5e'],P=[...Array(120)].map(()=>({x:innerWidth/2,y:innerHeight/3,vx:(Math.random()-.5)*14,vy:-Math.random()*14-2,s:4+Math.random()*6,c:cols[Math.random()*6|0]}));
+  let f=0;(function a(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.35;x.fillStyle=p.c;x.fillRect(p.x,p.y,p.s,p.s)});if(++f<110)requestAnimationFrame(a);else x.clearRect(0,0,c.width,c.height)})();
+}
+
+/* ---------- navigation (UI back, Android/browser back, Esc) ---------- */
+function nav(){
+  if($('mod').classList.contains('on')){if(mlock==2)home();else if(!mlock)closeM();return true}
+  if($('game').classList.contains('on')){leave();return true}
+  if($('lvls').classList.contains('on')){home();return true}
+  return false}
+try{history.pushState({q:1},'');addEventListener('popstate',()=>{if(nav())try{history.pushState({q:1},'')}catch(e){}})}catch(e){}
+addEventListener('keydown',e=>{if(e.key=='Escape')nav()});
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.tl,.ib,.lv button');if(b&&!b.classList.contains('lk')){beep(320,.04,'triangle');vib(8)}});
+
+/* ---------- keyboard ---------- */
+addEventListener('keydown',e=>{if(!$('game').classList.contains('on')||!S.g)return;
+  if(e.key>='1'&&e.key<='9')put(+e.key);else if(e.key=='Backspace'||e.key=='Delete')erase();else if(e.key=='n')tgNote();
+  else if(e.key.startsWith('Arrow')){if(sel<0)sel=40;const d={ArrowUp:-9,ArrowDown:9,ArrowLeft:-1,ArrowRight:1}[e.key];const n=sel+d;if(n>=0&&n<81&&!(d==1&&sel%9==8)&&!(d==-1&&sel%9==0)){sel=n;paint()}}});
+
+/* ---------- YouTube Playables lifecycle ---------- */
+if(yt)try{yt.system.onPause(()=>{paused=true;save()});yt.system.onResume(()=>{paused=false});yt.system.onAudioEnabledChange(on=>{S.snd=on?1:0;if($('home').classList.contains('on'))home()})}catch(e){}
+addEventListener('visibilitychange',()=>{paused=document.hidden;if(paused)save()});
+(async()=>{
+  if(yt)try{yt.game.firstFrameReady()}catch(e){}
+  await load();
+  try{if(yt&&!yt.system.isAudioEnabled())S.snd=0}catch(e){}
+  home();
+  if(yt)try{yt.game.gameReady()}catch(e){}
+})();
+</script>
+</body>
+</html>
